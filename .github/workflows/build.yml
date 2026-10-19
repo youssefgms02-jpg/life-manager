@@ -1,3 +1,4 @@
+
 name: Build APK and EXE
 
 on:
@@ -10,8 +11,34 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build Android APK and Windows EXE
+  windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build EXE
+        run: npm run dist:win
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: LifeManager-EXE
+          path: dist/*.exe
+          if-no-files-found: error
+
+  android:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +48,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -32,30 +59,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Windows EXE
-        run: npm run dist:win
-
-      - name: Upload Windows EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: LifeManager-EXE
-          path: dist/*.exe
-          if-no-files-found: error
-
       - name: Prepare Android project
         run: |
           if [ ! -d android ]; then
             npx cap add android
           fi
 
-      - name: Build Android APK
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
         run: |
-          npx cap sync android
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload Android APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LifeManager-APK
