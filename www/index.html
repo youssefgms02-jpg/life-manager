@@ -286,7 +286,7 @@ save()}
 function regen(){genDay(S.sel||today(),true);render();toast('🔄 ✓')}
 const dash3=V.dash;V.dash=()=>{const sel=S.sel||today();if(sel>=today())genDay(sel);return dash3().replace('<div class=card><input placeholder','<div class=card><button class="b s g" style="margin-bottom:6px" onclick="regen()">🔄 '+L2('أعد توليد خطة اليوم','Regenerate day plan')+'</button><br><input placeholder')};
 const CFG=()=>S.cfg=Object.assign({sleep:9,game:3,study:2,proj:2},S.cfg||{}),REV=()=>S.rev=S.rev||[];CFG();REV();
-function resetFuture(){const t=today(),f=a=>a.filter(x=>!(x.auto&&x.due>=t&&!x.done&&!x.missed));S.tasks=f(S.tasks);S.study=f(S.study);S.gen={};save()}
+function resetFuture(){const t=today(),f=a=>a.filter(x=>!((x.auto||x.fx||x.lr)&&x.due>=t&&!x.done&&!x.missed));S.tasks=f(S.tasks);S.study=f(S.study);S.gen={};save()}
 function rebuildPlanWindow(){const t=today();for(let i=0;i<7;i++)genDay(addD(t,i),true);save()}
 function ensurePlanWindow(){const t=today();S.gen=S.gen||{};for(let i=0;i<7;i++){const d=addD(t,i);if(!S.gen[d])genDay(d,false)}}
 if(!S.m3){S.m3=1;resetFuture()}
@@ -344,11 +344,11 @@ if(!S.m4){S.m4=1;resetFuture()}
 if(!S.m5){S.m5=1;resetFuture()}
 function wakeOf(d){const ev=S.events.filter(e=>e.day==d&&e.type=='lesson'),m=ev.length?Math.min(...ev.map(e=>mm(e.s))):9999;return Math.floor(Math.max(360,Math.min(720,m-90))/15)*15}
 const RV={eng:30,ar:60,math:30,sci:60};
-function tidy(sel){let dup=0,ovl=0;const d=new Date(sel+'T12:00:00').getDay(),key=(x,k)=>x.lr?'lr|'+x.s:(x.auto&&x.cat!='game'&&x.cat!='proj'&&x.cat!='free'&&x.cat!='study')?'a|'+x.cat+'|'+x.t+'|'+(x.s||'')+'|'+(x.revId||''):'m|'+k+'|'+x.t+'|'+(x.s||'')+'|'+x.tm+'|'+x.cat,
+function tidy(sel){let dup=0,ovl=0;const d=new Date(sel+'T12:00:00').getDay(),key=(x,k)=>x.lr?'lr|'+x.s:((x.auto||x.fx)&&x.cat!='game'&&x.cat!='proj'&&x.cat!='free'&&x.cat!='study')?'a|'+x.cat+'|'+x.t+'|'+(x.s||'')+'|'+(x.revId||''):'m|'+k+'|'+x.t+'|'+(x.s||'')+'|'+x.tm+'|'+x.cat,
 all=[...S.tasks.map(x=>[x,'t']),...S.study.map(x=>[x,'s'])].filter(([x])=>x.due==sel),seen={},del=new Set(),iv=x=>[mm(x.tm),mm(x.tm)+(x.du||30)],kept=evOf(d).map(e=>[mm(e.s),mm(e.e)]);
-[...all].sort((a,b)=>((b[0].done?2:0)+(b[0].auto||b[0].lr?0:1))-((a[0].done?2:0)+(a[0].auto||a[0].lr?0:1))).forEach(([x,k])=>{const kk=key(x,k);if(seen[kk]&&!x.done){del.add(x.id);dup++}else seen[kk]=1});
-all.filter(([x])=>!del.has(x.id)&&x.tm&&(x.done||x.missed||!(x.auto||x.lr))).forEach(([x])=>kept.push(iv(x)));
-all.filter(([x])=>!del.has(x.id)&&x.tm&&!x.done&&!x.missed&&(x.auto||x.lr)).sort((a,b)=>mm(a[0].tm)-mm(b[0].tm)).forEach(([x])=>{const[s,e]=iv(x);if(kept.some(k=>s<k[1]&&k[0]<e)){del.add(x.id);ovl++}else kept.push([s,e])});
+[...all].sort((a,b)=>((b[0].done?2:0)+(b[0].auto||b[0].lr||b[0].fx?0:1))-((a[0].done?2:0)+(a[0].auto||a[0].lr||a[0].fx?0:1))).forEach(([x,k])=>{const kk=key(x,k);if(seen[kk]&&!x.done){del.add(x.id);dup++}else seen[kk]=1});
+all.filter(([x])=>!del.has(x.id)&&x.tm&&(x.done||x.missed||!(x.auto||x.lr||x.fx))).forEach(([x])=>kept.push(iv(x)));
+all.filter(([x])=>!del.has(x.id)&&x.tm&&!x.done&&!x.missed&&(x.auto||x.lr||x.fx)).sort((a,b)=>mm(a[0].tm)-mm(b[0].tm)).forEach(([x])=>{const[s,e]=iv(x);if(kept.some(k=>s<k[1]&&k[0]<e)){del.add(x.id);ovl++}else kept.push([s,e])});
 S.tasks=S.tasks.filter(x=>!del.has(x.id));S.study=S.study.filter(x=>!del.has(x.id));return{dup,ovl}}
 const genBase=genDay;
 genDay=function(sel,force){S.gen=S.gen||{};if(!force&&S.gen[sel])return;const t=today(),d=new Date(sel+'T12:00:00').getDay();S.study=S.study.filter(x=>!(x.lr&&x.due==sel&&!x.done&&!x.missed));
