@@ -87,7 +87,7 @@ jobs:
           test -n "$ANDROID_KEY_ALIAS" || exit 1
           test -n "$ANDROID_KEY_PASSWORD" || exit 1
       - name: Build signed release APK
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'Release v')) }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
