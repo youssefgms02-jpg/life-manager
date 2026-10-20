@@ -123,7 +123,7 @@ const post=id=>{const x=S.tasks.find(y=>y.id==id);(x.hist=x.hist||[]).push(x.due
 const delT=id=>{S.tasks=S.tasks.filter(x=>x.id!=id);save();render()};
 const hab=(id,d)=>{const h=S.habits.find(x=>x.id==id);h.log[d]=h.log[d]?0:1;save();render()};
 function qTask(){form(tr('tasks'),[{k:'t',l:tr('Title')},{k:'due',l:tr('due'),t:'date',v:today()},{k:'tm',l:L2('الوقت (اختياري)','Time (optional)'),t:'time'},{k:'rec',l:L2('تكرار','Repeat'),v:'',o:[['',L2('مفيش','None')],['daily',L2('يوميًا','Daily')],['weekly',L2('أسبوعيًا','Weekly')]]},{k:'pri',l:'!',v:1,o:[[1,'!'],[2,'!!'],[3,'!!!']]}],r=>{if(r.t.trim())S.tasks.push({id:uid(),t:r.t.trim(),due:r.due,tm:r.tm,rec:r.rec,pri:+r.pri,done:0})})}
-V.tasks=()=>{const t=today(),f=S.tf||'today',L=S.tasks.filter(x=>f=='all'||(f=='today'?(x.due<=t&&!x.done)||x.doneOn==t:x.due>t));
+V.tasks=()=>{const t=today(),f=S.tf||'today',L=S.tasks.filter(x=>f=='all'||(f=='today'?(x.due==t&&!x.done)||x.doneOn==t:x.due>t));
 return `<h2>${tr('tasks')}</h2><div class=card><div class=row><input class=f id=qa placeholder="${S.lang=='ar'?'اكتب مهمة واضغط Enter':'Type a task and press Enter'}" onkeydown="if(event.key=='Enter'&&this.value.trim()){S.tasks.push({id:uid(),t:this.value.trim(),due:today(),pri:1,done:0});save();render()}"><button class=b onclick="qTask()">＋</button></div></div>
 <div class=chips>${['today','upcoming','all'].map(k=>`<span class="chip ${f==k?'on':''}" onclick="S.tf='${k}';render()">${tr(k)}</span>`).join('')}</div><div class=card>${L.map(taskRow).join('')||`<div class=empty>—</div>`}</div>`};
 V.cal=()=>{const d=S.cd,date=dateOf(d),cf=conflicts(d),fc=conflicts(5),fri=evOf(5),mth=fri.find(e=>e.title=='math'),pr=fri.find(e=>e.title=='pray'),fcf=mth&&pr&&fc.has(mth.id)&&fc.has(pr.id);
@@ -170,10 +170,10 @@ const subTog=(id,i)=>{S.tasks.find(y=>y.id==id).subs[i].done^=1;save();render()}
 V.dash=()=>{const t=today(),now=new Date(),d=now.getDay(),h=now.getHours(),cf=conflicts(d);
 const g=L2(h<12?'صباح الخير':'مساء الخير',h<12?'Good morning':'Good evening'),timed=[],any=[];
 evOf(d).forEach(e=>timed.push([mm(e.s),evRow(e,t,cf)]));
-S.tasks.filter(x=>(x.due<=t&&!x.done)||x.doneOn==t).forEach(x=>x.tm?timed.push([mm(x.tm),taskRow(x)]):any.push(taskRow(x)));
+S.tasks.filter(x=>(x.due==t&&!x.done)||x.doneOn==t).forEach(x=>x.tm?timed.push([mm(x.tm),taskRow(x)]):any.push(taskRow(x)));
 timed.sort((a,b)=>a[0]-b[0]);
 S.habits.forEach(x=>any.push(`<label style="color:var(--tx)"><input type=checkbox ${x.log[t]?'checked':''} onchange="hab('${x.id}','${t}')"> 🔁 ${esc(x.n)}</label>`));
-S.study.filter(x=>!x.done).slice(0,5).forEach(x=>any.push(`<div>📚 ${tr(x.s)}: ${esc(x.t)}</div>`));
+S.study.filter(x=>x.due==t||(!x.due&&!x.done)).slice(0,5).forEach(x=>any.push(`<label style="display:flex;align-items:center;gap:8px;color:var(--tx);${x.done?'opacity:.65;text-decoration:line-through':''}"><input type=checkbox ${x.done?'checked':''} onchange="stt('${x.id}','done')"> 📚 ${tr(x.s)}: ${esc(x.t)}</label>`));
 S.exams.filter(x=>{const n=(new Date(x.d)-new Date(t))/864e5;return n>=0&&n<=7}).forEach(x=>any.push(`<div>📝 ${tr(x.s)}: ${esc(x.t)} (${x.d})</div>`));
 const p=S.proj.find(x=>x.id==S.pj),ns=p&&p.steps.find(s=>!s.done);if(ns)any.push(`<div>💻 ${esc(p.n)}: ${esc(ns.t)}</div>`);
 any.push(`<div>🌱 ${confToday()}</div>`);const lg=S.logs[t]||{};any.push(`<div class=m>🎮 ${fmt(lg.game||0)}/3h · 😴 ${fmt(lg.sleep||0)}h</div>`);
@@ -293,7 +293,7 @@ function itDone(k,id){const x=gI(k,id);x.done=!x.done;x.missed=false;x.doneOn=x.
 function genDay(sel,force){S.gen=S.gen||{};if(!force&&S.gen[sel])return;S.gen[sel]=1;const c=CFG(),t=today(),d=new Date(sel+'T12:00:00').getDay(),drop=a=>a.filter(x=>!(x.auto&&x.due==sel&&!x.done&&!x.missed));S.tasks=drop(S.tasks);S.study=drop(S.study);
 const wake=wakeOf(d),bed=Math.max(1260,Math.min(1620,1440+wakeOf((d+1)%7)-c.sleep*60)),end=Math.min(1410,bed-30),nowR=sel==t?Math.ceil(nowM()/15)*15:0,start=Math.max(wake,nowR),thu=d==4,fri=d==5,lim=thu?870:end,L=evOf(d).filter(e=>e.type=='lesson').length,sm={game:0,study:0,proj:0};
 const busy=dayBlocks(sel);[...S.tasks,...S.study].filter(x=>x.due==sel&&x.tm&&(x.done||x.missed)).forEach(x=>busy.push({s:mm(x.tm),e:mm(x.tm)+(x.du||30)}));
-const put=(n,du,prefs,l,cat,ex)=>{for(const p of [].concat(prefs)){let q=Math.max(p,start);busy.sort((a,b)=>a.s-b.s);for(const b of busy){if(b.e<=q)continue;if(b.s-q>=du)break;q=Math.max(q,b.e)}if(q+du<=l){busy.push({s:q,e:q+du+10});(ex&&ex.s?S.study:S.tasks).push({id:uid(),t:n,due:sel,tm:hm(q),du,done:0,auto:1,cat,...ex});return q}}return null};
+const put=(n,du,prefs,l,cat,ex)=>{if([...S.tasks,...S.study].some(x=>x.auto&&x.due==sel&&x.t===n&&(x.done||x.missed)))return null;for(const p of [].concat(prefs)){let q=Math.max(p,start);busy.sort((a,b)=>a.s-b.s);for(const b of busy){if(b.e<=q)continue;if(b.s-q>=du)break;q=Math.max(q,b.e)}if(q+du<=l){busy.push({s:q,e:q+du+10});(ex&&ex.s?S.study:S.tasks).push({id:uid(),t:n,due:sel,tm:hm(q),du,done:0,auto:1,cat,...ex});return q}}return null};
 if(sel!=t||wake>=nowR)put(L2('☀ صحيان وفطار','☀ Wake up & breakfast'),45,wake,end,'wake');
 put(L2('🌙 جهّز للنوم — النوم ','🌙 Wind down — bed at ')+t12(hm(bed%1440)),25,end,end+25,'sleep');
 if(!S.events.some(e=>e.day==d&&e.title=='shower'))put(L2('🚿 دش','🚿 Shower'),20,wake+45,lim,'care');
