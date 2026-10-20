@@ -1,4 +1,6 @@
-const C='lm-v1',F=['./','index.html','fonts.css','manifest.webmanifest','icon-192.png','icon-512.png','fonts/cairo-arabic-400-normal.woff2','fonts/cairo-arabic-600-normal.woff2','fonts/cairo-arabic-700-normal.woff2','fonts/cairo-latin-400-normal.woff2','fonts/cairo-latin-600-normal.woff2','fonts/cairo-latin-700-normal.woff2'];
+const C='lm-v2',F=['./','index.html','fonts.css','manifest.webmanifest','icon-192.png','icon-512.png','fonts/cairo-arabic-400-normal.woff2','fonts/cairo-arabic-600-normal.woff2','fonts/cairo-arabic-700-normal.woff2','fonts/cairo-latin-400-normal.woff2','fonts/cairo-latin-600-normal.woff2','fonts/cairo-latin-700-normal.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!=C).map(x=>caches.delete(x)))));self.clients.claim()});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!='GET'||new URL(r.url).origin!=location.origin)return;e.respondWith(caches.match(r).then(hit=>{const net=fetch(r).then(res=>{if(res.ok)caches.open(C).then(c=>c.put(r,res.clone()));return res}).catch(()=>hit);return hit||net}))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('lm-')&&x!==C).map(x=>caches.delete(x)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
+if(r.mode==='navigate'){e.respondWith(fetch(r).then(res=>{if(res.ok)caches.open(C).then(c=>c.put('./',res.clone()));return res}).catch(()=>caches.match(r).then(hit=>hit||caches.match('./'))));return}
+e.respondWith(caches.match(r).then(hit=>{const net=fetch(r).then(res=>{if(res.ok)caches.open(C).then(c=>c.put(r,res.clone()));return res}).catch(()=>hit);return hit||net}))});
