@@ -5,8 +5,8 @@ gradle = Path("app/build.gradle")
 source = gradle.read_text()
 if "signingConfigs.release" not in source:
     source = re.sub(
-        r"(android\\s*\\{)",
-        r"""\\1
+        r"(android\s*\{)",
+        r"""\1
     signingConfigs {
         release {
             storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
@@ -20,8 +20,8 @@ if "signingConfigs.release" not in source:
         count=1,
     )
     source, count = re.subn(
-        r"(buildTypes\\s*\\{\\s*release\\s*\\{)",
-        r"\\1\\n            signingConfig signingConfigs.release",
+        r"(buildTypes\s*\{\s*release\s*\{)",
+        r"\1\n            signingConfig signingConfigs.release",
         source,
         count=1,
     )
