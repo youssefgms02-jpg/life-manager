@@ -427,7 +427,7 @@ else if(s.state==='unavailable-in-development')el.textContent=L2('التحديث
 }
 if(window.lifeManagerDesktop&&!window.__lmUpdaterListener){window.__lmUpdaterListener=true;window.lifeManagerDesktop.onUpdateStatus(showDesktopUpdateStatus)}
 async function checkAppUpdates(){const el=$('#update-result');if(!el)return;el.textContent=L2('بندور على آخر إصدار…','Checking the latest release…');
-if(window.lifeManagerDesktop){try{await window.lifeManagerDesktop.checkForUpdates();showDesktopUpdateStatus({state:'checking'})}catch(e){showDesktopUpdateStatus({state:'error',message:e.message||String(e)})}return}
+if(window.lifeManagerDesktop){try{await window.lifeManagerDesktop.checkForUpdates()}catch(e){showDesktopUpdateStatus({state:'error',message:e.message||String(e)})}return}
 try{const [vr,rr]=await Promise.all([currentAppVersion(),fetch(APP_REPO+'/releases/latest',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'})]);if(!rr.ok)throw new Error(rr.status===404?'No published release yet':'GitHub '+rr.status);const release=await rr.json(),latest=String(release.tag_name||'').replace(/^v/,''),assets=release.assets||[];if(!latest)throw new Error('Release version is missing');if(cmpVersion(latest,vr)<=0){el.textContent=L2('أنت تستخدم أحدث إصدار ('+vr+').','You are using the latest version ('+vr+').');return}
 const android=/android/i.test(navigator.userAgent)||(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform()==='android');
 const asset=android?assets.find(x=>x.name==='LifeManager-signed.apk'):assets.find(x=>/^LifeManager-Setup-.*\.exe$/i.test(x.name));
