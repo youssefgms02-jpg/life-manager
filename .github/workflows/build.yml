@@ -67,25 +67,7 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifemanager-release.keystore"
             export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/lifemanager-release.keystore"
-            python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("app/build.gradle")
-          s = p.read_text()
-          if "signingConfigs.release" not in s:
-              s = re.sub(r"(android\s*\{)", r"""\1
-              signingConfigs {
-                  release {
-                      storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
-                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
-                  }
-              }
-          """, s, count=1)
-              s = re.sub(r"(buildTypes\s*\{\s*release\s*\{)", r"\1\n            signingConfig signingConfigs.release", s, count=1)
-              p.write_text(s)
-          PY
+            python3 ../scripts/configure_android_signing.py
             ./gradlew assembleRelease
             mkdir -p ../dist-apk
             cp app/build/outputs/apk/release/app-release.apk ../dist-apk/LifeManager-signed.apk
