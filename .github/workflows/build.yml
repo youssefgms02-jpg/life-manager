@@ -86,4 +86,5 @@ jobs:
           path: dist-apk/*.apk
           if-no-files-found: error
       - name: Explain signing mode
-        run: echo "Android artifact mode: $APK_MODE"
+        run: |
+          echo "Android artifact mode: $APK_MODE"
