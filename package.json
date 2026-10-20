@@ -1,6 +1,6 @@
 {
   "name": "life-manager",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Life Manager - personal planner",
   "author": "Yousef",
   "main": "electron/main.js",
