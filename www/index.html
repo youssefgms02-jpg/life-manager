@@ -28,6 +28,28 @@ label{display:block;margin-bottom:8px;font-size:13px;color:var(--mu)}
 dialog{border:1px solid var(--bd);border-radius:14px;background:var(--cd);color:var(--tx);width:min(420px,92vw);font-family:inherit}
 #toast{position:fixed;bottom:16px;inset-inline-start:16px;background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:8px;display:none;z-index:9}
 .empty{color:var(--mu);font-size:13px;padding:6px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-top:8px}.cal span{padding:7px 0;border-radius:8px;cursor:pointer;font-size:13px;position:relative}.cal .h{color:var(--mu);cursor:default;font-size:12px}.cal .td{font-weight:700;color:var(--pr)}.cal .sl{outline:2px solid var(--pr)}.cal .ex{background:#fecaca;color:#7f1d1d;font-weight:700}.cal .dt::after{content:'';position:absolute;bottom:2px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--pr)}
+
+/* Stability polish: clearer focus states, responsive spacing, and calmer surfaces */
+:root{scroll-behavior:smooth}
+body{line-height:1.55}
+nav{box-shadow:0 1px 8px rgba(20,33,61,.035)}
+nav a{transition:background .16s ease,color .16s ease}
+nav a:hover{background:var(--sf);color:var(--pr)}
+main{padding:clamp(12px,2.2vw,24px)}
+.card{box-shadow:0 3px 14px rgba(20,33,61,.045);transition:border-color .16s ease,box-shadow .16s ease}
+.card:focus-within{border-color:var(--pr)}
+.b{min-height:34px;transition:filter .15s ease,transform .15s ease}
+.b:hover{filter:brightness(1.04)}
+.b:active{transform:translateY(1px)}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid color-mix(in srgb,var(--pr) 55%,transparent);outline-offset:2px}
+input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--pr)}
+.ev{line-height:1.45}
+.pb i{transition:width .25s ease}
+#toast{box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:min(92vw,440px)}
+dialog{box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:88dvh;overflow:auto}
+@media(max-width:800px){main{padding:12px}nav{padding:7px;gap:3px;box-shadow:0 2px 12px rgba(20,33,61,.06)}nav a{padding:8px 10px} .grid{grid-template-columns:minmax(0,1fr)}.kan{grid-template-columns:repeat(5,minmax(135px,1fr))}}
+@media(max-width:420px){.card{padding:11px;border-radius:12px}.ev{gap:6px;padding:7px}h2{font-size:1.25rem}.row{gap:6px}}
+@media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 </style></head><body>
 <nav id="nav"></nav><main id="main"></main><dialog id="dlg"></dialog><div id="toast"></div>
 <script>
@@ -155,7 +177,7 @@ S.study.filter(x=>!x.done).slice(0,5).forEach(x=>any.push(`<div>📚 ${tr(x.s)}:
 S.exams.filter(x=>{const n=(new Date(x.d)-new Date(t))/864e5;return n>=0&&n<=7}).forEach(x=>any.push(`<div>📝 ${tr(x.s)}: ${esc(x.t)} (${x.d})</div>`));
 const p=S.proj.find(x=>x.id==S.pj),ns=p&&p.steps.find(s=>!s.done);if(ns)any.push(`<div>💻 ${esc(p.n)}: ${esc(ns.t)}</div>`);
 any.push(`<div>🌱 ${confToday()}</div>`);const lg=S.logs[t]||{};any.push(`<div class=m>🎮 ${fmt(lg.game||0)}/3h · 😴 ${fmt(lg.sleep||0)}h</div>`);
-return `<h2>${g} 👋</h2><div class=m>${now.toLocaleDateString(S.lang=='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Africa/Cairo'})}</div><div class=card style="margin-top:10px"><b>${fmt(prog())}%</b>${bar(prog())}</div><div class=row style="margin-bottom:12px"><button class=b onclick="qTask()">＋ ${tr('tasks')}</button><button class="b g" onclick="editEv()">＋ ${tr('cal')}</button><button class="b g" onclick="logForm()">😴🎮</button></div>${cf.size?`<div class=w>${tr('conflict')}</div>`:''}<div class=card><h3>${L2('يومي كله','My whole day')} — ${dn(d)}</h3>${timed.map(r=>r[1]).join('')}<h3 style="margin-top:14px">${tr('all2')}</h3>${any.join('')}</div>`};
+const todayTasks=S.tasks.filter(x=>x.due==t&&!x.done&&!x.missed),overdueTasks=S.tasks.filter(x=>x.due<t&&!x.done&&!x.missed),examSoon=S.exams.filter(x=>{const n=(new Date(x.d)-new Date(t))/864e5;return n>=0&&n<=7}).length;\nreturn `<h2>${g} 👋</h2><div class=m>${now.toLocaleDateString(S.lang=='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Africa/Cairo'})}</div><div class=card style="margin-top:10px"><div class=row style="justify-content:space-between;margin-bottom:7px"><b>${L2('إنجاز اليوم','Today’s progress')}</b><strong>${fmt(prog())}%</strong></div>${bar(prog())}<div class="row dash-metrics" style="margin-top:10px"><span class=tag>📌 ${L2('متبقي اليوم','Due today')}: ${todayTasks.length}</span><span class=tag>↩ ${L2('متأخر','Overdue')}: ${overdueTasks.length}</span><span class=tag>📝 ${L2('امتحانات قريبة','Exams soon')}: ${examSoon}</span></div></div><div class=row style="margin-bottom:12px"><button class=b onclick="qTask()">＋ ${tr('tasks')}</button><button class="b g" onclick="editEv()">＋ ${tr('cal')}</button><button class="b g" onclick="logForm()">😴🎮</button></div>${cf.size?`<div class=w>${tr('conflict')}</div>`:''}<div class=card><h3>${L2('يومي كله','My whole day')} — ${dn(d)}</h3>${timed.map(r=>r[1]).join('')}<h3 style="margin-top:14px">${tr('all2')}</h3>${any.join('')}</div>`};
 V.week=()=>`<h2>${tr('week')}</h2><div class=m>${L2('اسحب أي حدث لليوم التاني (كمبيوتر). على الموبايل استخدم التعديل.','Drag an event to another day (desktop). On phone, tap an event to edit.')}</div><div style="display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:6px;overflow-x:auto;margin:10px 0">${ORD.map(d=>`<div class=col ondragover="event.preventDefault()" ondrop="dp(event,${d})"><b>${dn(d)}${conflicts(d).size?' ⚠':''}</b>${evOf(d).map(e=>`<div class=ev draggable=true ondragstart="event.dataTransfer.setData('text','${e.id}')" style="--c:${COL[e.type]};display:block;font-size:12px;cursor:grab" onclick="editEv('${e.id}')"><div class=m>${t12(e.s)} – ${t12(e.e)}</div>${evTitle(e)}${e.prot?' 🔒':''}</div>`).join('')}</div>`).join('')}</div><div class=card><h3>${L2('انسخ يوم ليوم تاني','Copy a day to another day')}</h3><div class=row><select id=cp1 class=f>${ORD.map(d=>`<option value=${d}>${dn(d)}</option>`).join('')}</select><span>→</span><select id=cp2 class=f>${ORD.map(d=>`<option value=${d}>${dn(d)}</option>`).join('')}</select><button class=b onclick="cpDay(+cp1.value,+cp2.value)">${tr('add')}</button></div></div>`;
 const dp=(ev,d)=>{ev.preventDefault();const e=S.events.find(x=>x.id==ev.dataTransfer.getData('text'));if(e&&!e.prot){e.day=d;save();render()}else toast(tr('protMsg'))};
 const cpDay=(a,b)=>{if(a==b)return;evOf(a).filter(e=>!e.prot&&!e.gen).forEach(e=>S.events.push({...e,id:uid(),day:b}));save();render();toast('✓')};
