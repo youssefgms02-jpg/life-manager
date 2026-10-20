@@ -1,90 +1,133 @@
-name: Build APK and EXE
+name: Build LifeManager apps
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
+    tags: ['v*']
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   windows:
-    name: Build Windows EXE
+    name: Build Windows installer
     runs-on: windows-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install dependencies
-        run: npm install
-      - name: Build EXE
+      - name: Verify release version matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $pkg = (Get-Content package.json | ConvertFrom-Json).version
+          $tag = "${{ github.ref_name }}".Substring(1)
+          if ($pkg -ne $tag) { throw "Tag version $tag does not match package.json version $pkg" }
+      - run: npm install
+      - name: Build Windows installer and update metadata
         run: npm run dist:win
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: LifeManager-EXE
-          path: dist/*.exe
+          name: LifeManager-Windows
+          path: |
+            dist/*.exe
+            dist/latest.yml
           if-no-files-found: error
 
   android:
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Setup Java
-        uses: actions/setup-java@v4
+          cache: npm
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-      - name: Install dependencies
-        run: npm install
+      - run: npm install
       - name: Prepare Android project
         run: |
-          if [ ! -d android ]; then
-            npx cap add android
-          fi
-      - name: Sync Capacitor
-        run: npx cap sync android
-      - name: Build APK
+          if [ ! -d android ]; then npx cap add android; fi
+      - run: npx cap sync android
+      - name: Set Android version
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          version = json.loads(Path('package.json').read_text())['version']
+          p = Path('android/app/build.gradle')
+          s = p.read_text()
+          s, n1 = re.subn(r'versionCode\s+\d+', 'versionCode ' + os.environ['BUILD_NUMBER'], s, count=1)
+          s, n2 = re.subn(r'versionName\s+"[^"]+"', 'versionName "' + version + '"', s, count=1)
+          if n1 != 1 or n2 != 1: raise SystemExit('Could not safely set Android versionCode/versionName')
+          p.write_text(s)
+          print(f'Android version: {version} ({os.environ["BUILD_NUMBER"]})')
+          PY
+      - name: Require stable signing for release APK
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || (echo "::error::Set all four Android signing secrets before creating a release." && exit 1)
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || exit 1
+          test -n "$ANDROID_KEY_ALIAS" || exit 1
+          test -n "$ANDROID_KEY_PASSWORD" || exit 1
+      - name: Build signed release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifemanager-release.keystore"
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/lifemanager-release.keystore"
+          python3 scripts/configure_android_signing.py
           cd android
           chmod +x gradlew
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifemanager-release.keystore"
-            export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/lifemanager-release.keystore"
-            python3 ../scripts/configure_android_signing.py
-            ./gradlew assembleRelease
-            mkdir -p ../dist-apk
-            cp app/build/outputs/apk/release/app-release.apk ../dist-apk/LifeManager-signed.apk
-            echo "APK_MODE=signed-release" >> "$GITHUB_ENV"
-          else
-            ./gradlew assembleDebug
-            mkdir -p ../dist-apk
-            cp app/build/outputs/apk/debug/app-debug.apk ../dist-apk/LifeManager-debug.apk
-            echo "APK_MODE=debug-fallback" >> "$GITHUB_ENV"
-            echo "::warning::Stable Android signing secrets are not configured. This debug APK is not guaranteed to update an existing install in place."
-          fi
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          ./gradlew assembleRelease
+          mkdir -p ../dist-apk
+          cp app/build/outputs/apk/release/app-release.apk ../dist-apk/LifeManager-signed.apk
+      - name: Build debug APK for testing only
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          mkdir -p ../dist-apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist-apk/LifeManager-debug.apk
+      - uses: actions/upload-artifact@v4
         with:
           name: LifeManager-APK
           path: dist-apk/*.apk
           if-no-files-found: error
-      - name: Explain signing mode
-        run: |
-          echo "Android artifact mode: $APK_MODE"
+
+  release:
+    name: Publish GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: LifeManager-*
+          path: release-assets
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: LifeManager ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            release-assets/*.exe
+            release-assets/*.apk
+            release-assets/latest.yml
