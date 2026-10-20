@@ -72,7 +72,7 @@ jobs:
           p.write_text(s)
           print(f'Android version: {version} ({os.environ["BUILD_NUMBER"]})')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write(f'version={version}\\n')
+              output.write(f'version={version}\n')
           PY
       - name: Require stable signing for release APK
         if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'Release v')) }}
