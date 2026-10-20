@@ -91,8 +91,8 @@ jobs:
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifemanager-release.keystore"
           export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/lifemanager-release.keystore"
-          python3 scripts/configure_android_signing.py
           cd android
+          python3 ../scripts/configure_android_signing.py
           chmod +x gradlew
           ./gradlew assembleRelease
           mkdir -p ../dist-apk
