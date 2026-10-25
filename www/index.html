@@ -522,7 +522,7 @@ function lmEnforceUniqueSubjects(day){
       const old=x.s,next=choices[0],oldName=tr(old),newName=tr(next);
       x.s=next;
       if(x.t&&x.t.includes(oldName))x.t=x.t.replace(oldName,newName);
-      else if(x.t&&x.t.includes(':'))x.t=x.slice(0,x.lastIndexOf(':')+1)+' '+newName;
+      else if(x.t&&x.t.includes(':'))x.t=x.t.slice(0,x.t.lastIndexOf(':')+1)+' '+newName;
       else x.t='📚 '+L2('مذاكرة: ','Study: ')+newName;
       used.add(next);changed++;
     }else if(x.auto||x.fx||x.lr){remove.add(x.id);changed++}
