@@ -51,6 +51,32 @@ dialog{box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:88dvh;overflow:auto}
 @media(max-width:800px){main{padding:12px}nav{padding:7px;gap:3px;box-shadow:0 2px 12px rgba(20,33,61,.06)}nav a{padding:8px 10px} .grid{grid-template-columns:minmax(0,1fr)}.kan{grid-template-columns:repeat(5,minmax(135px,1fr))}}
 @media(max-width:420px){.card{padding:11px;border-radius:12px}.ev{gap:6px;padding:7px}h2{font-size:1.25rem}.row{gap:6px}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* LifeManager refreshed visual system */
+:root{--bg:#f5f8ff;--cd:#ffffff;--tx:#14233f;--mu:#66758f;--pr:#2563eb;--bd:#e3eaf7;--ok:#15803d;--bad:#dc2626;--sf:#edf3ff;--shadow:0 12px 34px rgba(29,55,105,.07)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--cd:#121d30;--tx:#edf3ff;--mu:#9baac2;--pr:#75a7ff;--bd:#293750;--sf:#1a2a43;--shadow:0 12px 34px rgba(0,0,0,.16)}}
+:root[data-theme=dark]{--bg:#0b1220;--cd:#121d30;--tx:#edf3ff;--mu:#9baac2;--pr:#75a7ff;--bd:#293750;--sf:#1a2a43;--shadow:0 12px 34px rgba(0,0,0,.16)}
+html{scroll-behavior:smooth}body{background:radial-gradient(ellipse at 10% 0%,rgba(37,99,235,.07),transparent 34%),var(--bg);font-size:14px;line-height:1.65}
+nav{width:230px;padding:18px 13px;background:var(--cd);border-inline-end:1px solid var(--bd);box-shadow:4px 0 28px rgba(30,64,120,.035);gap:7px}
+nav b{display:flex;align-items:center;font-size:19px;padding:9px 10px 18px;white-space:nowrap}
+nav a{padding:11px 13px;border-radius:12px;font-size:14px;transition:background .18s,color .18s,transform .18s}
+nav a:hover{background:var(--sf);transform:translateX(-2px)}nav a.on{background:linear-gradient(135deg,var(--sf),rgba(37,99,235,.12));color:var(--pr);box-shadow:inset -3px 0 var(--pr)}
+main{padding:26px;max-width:1240px;margin:0 auto}
+.card{border-radius:18px;padding:18px;margin-bottom:15px;box-shadow:var(--shadow);border-color:var(--bd);transition:box-shadow .18s,border-color .18s}
+.card:hover{border-color:color-mix(in srgb,var(--pr) 24%,var(--bd))}
+h2{font-size:24px;letter-spacing:-.35px;margin:2px 0 16px;line-height:1.4}h3{font-size:16px;margin:0 0 10px}
+.b{border-radius:11px;padding:9px 14px;font-weight:700;font-size:13px;box-shadow:0 3px 8px rgba(37,99,235,.12);transition:filter .15s,transform .15s}
+.b:hover{filter:brightness(1.04);transform:translateY(-1px)}.b:active{transform:translateY(0)}.b.g{box-shadow:none;border:1px solid var(--bd)}
+input,select,textarea{border-radius:11px;padding:9px 11px;min-height:39px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--pr);box-shadow:0 0 0 3px rgba(37,99,235,.11)}
+label{font-size:13px;margin-bottom:10px}.grid{gap:15px}.metric{border-radius:14px;padding:13px}.metric strong{font-size:22px}
+.ev{border-radius:12px;padding:10px 12px;margin-bottom:8px}.tag{padding:3px 8px;font-weight:700}
+.chip{border-radius:11px;padding:7px 12px}.pb{height:9px}
+#toast{border-radius:13px;padding:11px 16px;box-shadow:var(--shadow);max-width:min(92vw,520px)}
+.w{border-radius:12px}.empty{padding:12px}
+@media(max-width:800px){body{flex-direction:column}nav{width:100%;height:auto;flex-direction:row;gap:5px;padding:8px;position:sticky;top:0;z-index:20;box-shadow:0 6px 20px rgba(30,64,120,.08);border-bottom:1px solid var(--bd)}nav b{display:none}nav a{font-size:12px;padding:9px 11px}nav a:hover{transform:none}main{padding:14px 12px 28px}h2{font-size:21px}.card{padding:14px;border-radius:15px}.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
 </style></head><body>
 <nav id="nav"></nav><main id="main"></main><dialog id="dlg"></dialog><div id="toast"></div>
 <script>
@@ -470,6 +496,75 @@ const data2=V.data;V.data=()=>updateCard()+syncCard()+data2();
 
 function render(){const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('type')==='recovery'||hp.get('access_token')||hp.get('error_description')){renderRecovery();return}ensurePlanWindow();$('#nav').style.display='';document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=='ar'?'rtl':'ltr';if(S.dark)document.documentElement.dataset.theme=S.dark;
 $('#nav').innerHTML=`<b><svg width=28 height=28 viewBox="0 0 256 256" style="vertical-align:middle;margin-inline-end:6px"><rect width=256 height=256 rx=56 fill="#2563eb"/><rect x=56 y=72 width=144 height=128 rx=22 fill="#fff"/><path d="M56 94a22 22 0 0 1 22-22h100a22 22 0 0 1 22 22v18H56z" fill="#bfdbfe"/><rect x=88 y=50 width=14 height=38 rx=7 fill="#fff"/><rect x=154 y=50 width=14 height=38 rx=7 fill="#fff"/><path d="M92 156l26 26 48-52" fill=none stroke="#2563eb" stroke-width=16 stroke-linecap=round stroke-linejoin=round /></svg>${S.lang=='ar'?'مدير حياتي':'Life Manager'}</b><span class=m id=sy>${SY}</span>`+NAV.map(k=>`<a class="${S.v==k?'on':''}" onclick="S.v='${k}';render();scrollTo(0,0)">${tr(k)}</a>`).join('');$('#main').innerHTML=V[S.v]()}
+
+// ===== Smart schedule repair and weekly balance =====
+function lmFixFixedEvents(){
+  let changed=0;
+  const fam=S.events.find(e=>e.day==4&&e.title=='fam');
+  if(fam&&(fam.s!=='16:00'||fam.e!=='23:00'||!fam.prot)){fam.s='16:00';fam.e='23:00';fam.prot=1;changed++}
+  const walk=S.events.find(e=>e.day==5&&e.title=='walk');
+  if(walk&&(walk.s!=='12:35'||walk.e!=='14:05'||!walk.prot)){walk.s='12:35';walk.e='14:05';walk.prot=1;changed++}
+  return changed;
+}
+function lmStudyItems(day){
+  return [...S.study,...S.tasks].filter(x=>x.due===day&&x.s&&SUBJ.includes(x.s)&&(['study','rev','lesrev'].includes(x.cat)||x.revId||x.lr||x.type==='study'));
+}
+function lmEnforceUniqueSubjects(day){
+  const arr=lmStudyItems(day).sort((a,b)=>(b.done?1:0)-(a.done?1:0)||((a.auto||a.fx||a.lr)?1:0)-((b.auto||b.fx||b.lr)?1:0));
+  const used=new Set(),remove=new Set();let changed=0;
+  for(const x of arr){
+    if(!used.has(x.s)){used.add(x.s);continue}
+    if(x.done||x.missed){continue}
+    const choices=SUBJ.filter(s=>!used.has(s));
+    if(choices.length&&(x.auto||x.fx||x.lr||x.revId)){
+      const dayNum=Math.floor(new Date(day+'T12:00:00')/864e5);
+      choices.sort((a,b)=>((SUBJ.indexOf(a)-dayNum%SUBJ.length+SUBJ.length)%SUBJ.length)-((SUBJ.indexOf(b)-dayNum%SUBJ.length+SUBJ.length)%SUBJ.length));
+      const old=x.s,next=choices[0],oldName=tr(old),newName=tr(next);
+      x.s=next;
+      if(x.t&&x.t.includes(oldName))x.t=x.t.replace(oldName,newName);
+      else if(x.t&&x.t.includes(':'))x.t=x.slice(0,x.lastIndexOf(':')+1)+' '+newName;
+      else x.t='📚 '+L2('مذاكرة: ','Study: ')+newName;
+      used.add(next);changed++;
+    }else if(x.auto||x.fx||x.lr){remove.add(x.id);changed++}
+    else { /* Keep user-created and completed records intact. */ used.add(x.s); }
+  }
+  if(remove.size){S.tasks=S.tasks.filter(x=>!remove.has(x.id));S.study=S.study.filter(x=>!remove.has(x.id))}
+  return changed;
+}
+function repairAllSchedules(){
+  const fixed=lmFixFixedEvents(),start=today(),dates=Array.from({length:7},(_,i)=>addD(start,i));
+  window.__fullDay=true;
+  try{
+    for(const day of dates){
+      // Rebuild only unfinished generated items; completed work and manually added tasks survive.
+      const generated=x=>!!(x.auto||x.fx||x.lr);
+      S.tasks=S.tasks.filter(x=>!(x.due===day&&generated(x)&&!x.done&&!x.missed));
+      S.study=S.study.filter(x=>!(x.due===day&&generated(x)&&!x.done&&!x.missed));
+      S.gen=S.gen||{};S.gen[day]=0;
+      genDay(day,true);
+      lmEnforceUniqueSubjects(day);
+      tidy(day);
+    }
+  }finally{window.__fullDay=false}
+  // One final consistency pass for the current day, without removing completed entries.
+  dates.forEach(day=>{lmEnforceUniqueSubjects(day);tidy(day)});
+  save();render();
+  toast('✓ '+L2('تم إصلاح جداول الأيام السبعة مع الحفاظ على المهام المكتملة','Repaired the next 7 days; completed tasks were preserved'));
+}
+const lmOldDash=V.dash;
+V.dash=function(){
+  const html=lmOldDash();
+  const day=S.sel||today();
+  const list=[...S.tasks,...S.study].filter(x=>x.due===day);
+  const total=list.filter(x=>!x.missed).length,done=list.filter(x=>x.done&&!x.missed).length;
+  const pct=total?Math.round(done/total*100):0;
+  const panel='<div class="card lm-overview"><div class="row" style="justify-content:space-between;align-items:center"><div><h3 style="margin:0">✨ '+L2('ملخص إنجاز اليوم','Today at a glance')+'</h3><div class="m">'+done+' / '+total+' · '+pct+'%</div></div><div style="font-size:24px;font-weight:800;color:var(--pr)">'+pct+'%</div></div><div class="pb" style="margin:10px 0 13px"><i style="width:'+pct+'%"></i></div><div class="row"><button class="b" onclick="regen()">🔄 '+L2('إعادة توليد اليوم','Regenerate today')+'</button><button class="b g" onclick="repairAllSchedules()">🛠 '+L2('إصلاح جميع الجداول','Repair all schedules')+'</button></div><div class="m" style="margin-top:9px">✓ '+L2('تنويع المواد ومنع تكرار المادة في اليوم الواحد','Rotate subjects and avoid studying the same subject twice in one day')+'</div></div>';
+  return html.replace('</h2>','</h2>'+panel);
+};
+// Ensure updated defaults apply to existing saved profiles as well as fresh installs.
+lmFixFixedEvents();
+if(!S.lmDesignV2){S.lmDesignV2=1;S.dark=S.dark||null;S.gen=S.gen||{};save()}
+
 render();
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')==0)navigator.serviceWorker.register('sw.js');
 </script></body></html>
