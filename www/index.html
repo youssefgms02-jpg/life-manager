@@ -77,6 +77,46 @@ label{font-size:13px;margin-bottom:10px}.grid{gap:15px}.metric{border-radius:14p
 @media(max-width:800px){body{flex-direction:column}nav{width:100%;height:auto;flex-direction:row;gap:5px;padding:8px;position:sticky;top:0;z-index:20;box-shadow:0 6px 20px rgba(30,64,120,.08);border-bottom:1px solid var(--bd)}nav b{display:none}nav a{font-size:12px;padding:9px 11px}nav a:hover{transform:none}main{padding:14px 12px 28px}h2{font-size:21px}.card{padding:14px;border-radius:15px}.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* ===== 1.0.9 visual and accessibility refinement ===== */
+:root{color-scheme:light dark;--focus:rgba(37,99,235,.2)}
+html{min-height:100%;background:var(--bg)}
+body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 8% 0%,rgba(59,130,246,.10),transparent 38%),radial-gradient(ellipse at 100% 80%,rgba(14,165,233,.055),transparent 35%),var(--bg)}
+nav{overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--bd) transparent}
+nav a{display:flex;align-items:center;gap:8px;min-height:42px;line-height:1.35}
+nav a:focus-visible,.b:focus-visible{outline:3px solid var(--pr);outline-offset:3px}
+main{width:100%;min-height:100vh;min-height:100dvh}
+main>h2{position:relative;padding-bottom:11px;margin-bottom:18px}
+main>h2:after{content:"";position:absolute;inset-inline-start:0;bottom:0;width:54px;height:3px;border-radius:9px;background:linear-gradient(90deg,var(--pr),#38bdf8)}
+.card{position:relative;overflow-wrap:anywhere;background:color-mix(in srgb,var(--cd) 96%,var(--sf));box-shadow:0 8px 26px rgba(20,45,90,.055)}
+.metric{background:linear-gradient(145deg,var(--sf),color-mix(in srgb,var(--cd) 65%,var(--sf)))}
+.b{min-height:38px;cursor:pointer}
+.b.g{background:var(--sf)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{max-width:100%}
+textarea{resize:vertical;line-height:1.6}
+.ev{border:1px solid color-mix(in srgb,var(--c,#999) 16%,var(--bd));border-inline-start:4px solid var(--c,#999)}
+.empty{border:1px dashed var(--bd);border-radius:12px;text-align:center}
+#toast{inset-inline:16px auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:100;animation:toast-in .18s ease-out}
+@keyframes toast-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+dialog::backdrop{background:rgba(8,18,38,.48);backdrop-filter:blur(3px)}
+dialog label{color:var(--tx)}
+@media(max-width:800px){
+ body{padding-bottom:env(safe-area-inset-bottom,0px)}
+ nav{display:flex;flex-wrap:nowrap;align-items:center;gap:5px;padding:8px max(9px,env(safe-area-inset-left)) 8px;scrollbar-width:none}
+ nav::-webkit-scrollbar{display:none}
+ nav a{flex:0 0 auto;min-height:40px;padding:9px 12px;border:1px solid transparent}
+ nav a.on{border-color:color-mix(in srgb,var(--pr) 22%,var(--bd));box-shadow:inset 0 -2px var(--pr)}
+ main{padding:15px 12px calc(28px + env(safe-area-inset-bottom,0px))}
+ main>h2{font-size:22px;margin-bottom:15px}
+ .grid{grid-template-columns:minmax(0,1fr)}
+ .row{align-items:stretch}
+ .row>.b{flex:0 0 auto}
+ .ev .t{min-width:100px}
+}
+@media(min-width:801px) and (max-width:1050px){nav{width:205px}main{padding:20px}}
+@media(prefers-reduced-motion:reduce){#toast{animation:none}}
+
 </style></head><body>
 <nav id="nav"></nav><main id="main"></main><dialog id="dlg"></dialog><div id="toast"></div>
 <script>
@@ -499,9 +539,9 @@ const data2=V.data;V.data=()=>updateCard()+syncCard()+data2();
 S.prayerDone=S.prayerDone||{};S.water=S.water||{};S.mood=S.mood||{};S.journal=S.journal||{};S.goals=S.goals||[];
 function lmClock(){return new Intl.DateTimeFormat(S.lang==='ar'?'ar-EG':'en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date())}
 function lmPrayerTools(){
- const d=cairoDay(),t=today(),P=ptimes(dateOf(d)),p=[P.fajr,d===5?P.dhuhr:P.dhuhr,P.asr,P.maghrib,P.isha].map(x=>hm(Math.round(x*60))),keys=['fajr',d===5?'pray':'p_dhuhr','p_asr','p_maghrib','p_isha'],names=[L2('الفجر','Fajr'),L2('الظهر','Dhuhr'),L2('العصر','Asr'),L2('المغرب','Maghrib'),L2('العشاء','Isha')];
+ const d=cairoDay(),t=today(),P=ptimes(dateOf(d)),p=[P.fajr,d===5?P.dhuhr:P.dhuhr,P.asr,P.maghrib,P.isha].map(x=>hm(Math.round(x*60))),keys=['fajr',d===5?'pray':'p_dhuhr','p_asr','p_maghrib','p_isha'],names=[L2('الفجر','Fajr'),L2(d===5?'الجمعة':'الظهر',d===5?'Jumu\'ah':'Dhuhr'),L2('العصر','Asr'),L2('المغرب','Maghrib'),L2('العشاء','Isha')];
  const done=S.prayerDone[t]||{};
- return `<div class=card><h3>🕌 ${L2('مواقيت الصلاة — بنها','Prayer times — Banha')}</h3><div class=m>${L2('توقيت مصر الشتوي · ساعة القاهرة','Egypt winter time · Cairo time')}: <b>${lmClock()}</b></div><div class=grid style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:7px;margin-top:10px">${p.map((x,i)=>`<div class=metric><strong style="font-size:17px">${t12(x)}</strong><span>${names[i]}</span><label style="margin:5px 0 0;color:var(--tx)"><input type=checkbox ${done[keys[i]]?'checked':''} onchange="lmPrayerToggle('${t}','${keys[i]}',this.checked)"> ${L2('اتصليت','Prayed')}</label></div>`).join('')}</div><div class=m style="margin-top:8px">${L2('المواقيت تقديرية حسب موقع بنها وقد تختلف دقائق عن المسجد؛ راجع المسجد المحلي.','Times are estimates for Banha and may differ by a few minutes from your local mosque.')}</div></div>`
+ return `<div class=card><h3>🕌 ${L2('مواقيت الصلاة — بنها','Prayer times — Banha')}</h3><div class=m>${L2('توقيت مصر الشتوي · ساعة القاهرة','Egypt winter time · Cairo time')}: <b>${lmClock()}</b></div><div class=grid style="grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:7px;margin-top:10px">${p.map((x,i)=>`<div class=metric><strong style="font-size:17px">${t12(x)}</strong><span>${names[i]}</span><label style="margin:5px 0 0;color:var(--tx)"><input type=checkbox ${done[keys[i]]?'checked':''} onchange="lmPrayerToggle('${t}','${keys[i]}',this.checked)"> ${L2('صليت','Prayed')}</label></div>`).join('')}</div><div class=m style="margin-top:8px">${L2('المواقيت تقديرية حسب موقع بنها وقد تختلف دقائق عن المسجد؛ راجع المسجد المحلي.','Times are estimates for Banha and may differ by a few minutes from your local mosque.')}</div></div>`
 }
 function lmPrayerToggle(d,k,v){S.prayerDone[d]=S.prayerDone[d]||{};S.prayerDone[d][k]=v?1:0;save()}
 function lmDailyTools(){
@@ -521,7 +561,7 @@ function lmGoalToggle(i,v){S.goals[i].done=v?1:0;save();render()}
 function lmGoalDel(i){S.goals.splice(i,1);save();render()}
 const lmDashBase=V.dash;V.dash=()=>lmDashBase()+lmPrayerTools()+lmDailyTools();
 
-function render(){const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('type')==='recovery'||hp.get('access_token')||hp.get('error_description')){renderRecovery();return}ensurePlanWindow();$('#nav').style.display='';document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=='ar'?'rtl':'ltr';if(S.dark)document.documentElement.dataset.theme=S.dark;
+function render(){const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('type')==='recovery'||hp.get('access_token')||hp.get('error_description')){renderRecovery();return}ensurePlanWindow();$('#nav').style.display='';document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=='ar'?'rtl':'ltr';document.documentElement.dataset.theme=(S.dark==='dark'||S.dark==='light')?S.dark:'';if(!V[S.v])S.v='dash';
 $('#nav').innerHTML=`<b><svg width=28 height=28 viewBox="0 0 256 256" style="vertical-align:middle;margin-inline-end:6px"><rect width=256 height=256 rx=56 fill="#2563eb"/><rect x=56 y=72 width=144 height=128 rx=22 fill="#fff"/><path d="M56 94a22 22 0 0 1 22-22h100a22 22 0 0 1 22 22v18H56z" fill="#bfdbfe"/><rect x=88 y=50 width=14 height=38 rx=7 fill="#fff"/><rect x=154 y=50 width=14 height=38 rx=7 fill="#fff"/><path d="M92 156l26 26 48-52" fill=none stroke="#2563eb" stroke-width=16 stroke-linecap=round stroke-linejoin=round /></svg>${S.lang=='ar'?'مدير حياتي':'Life Manager'}</b><span class=m id=sy>${SY}</span>`+NAV.map(k=>`<a class="${S.v==k?'on':''}" onclick="S.v='${k}';render();scrollTo(0,0)">${tr(k)}</a>`).join('');$('#main').innerHTML=V[S.v]()}
 
 // ===== Smart schedule repair and weekly balance =====
