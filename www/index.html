@@ -120,7 +120,7 @@ const evTitle=e=>(T[e.title]?tr(e.title):esc(e.title))+(e.sub?' · '+tr(e.sub):'
 const evOf=d=>S.events.filter(e=>e.day==d).concat(S.noPray?[]:prayEv(d)).sort((a,b)=>mm(a.s)-mm(b.s));
 const stOf=(e,date)=>S.st[e.id+'|'+date]||'';
 function conflicts(d){const l=evOf(d),s=new Set();l.forEach((a,i)=>l.forEach((b,j)=>{if(i<j&&!a.gen&&!b.gen&&mm(a.s)<mm(b.e)&&mm(b.s)<mm(a.e)){s.add(a.id);s.add(b.id)}}));return s}
-function prog(){const t=today(),d=new Date().getDay();let a=0,n=0;evOf(d).filter(e=>e.type!='travel'&&e.kind!='opt').forEach(e=>{n++;if(stOf(e,t)=='done')a++});S.tasks.filter(x=>x.due==t||x.doneOn==t).forEach(x=>{n++;if(x.done)a++});S.habits.forEach(h=>{n++;if(h.log[t])a++});return n?Math.round(a/n*100):0}
+function prog(){const t=today(),d=cairoDay();let a=0,n=0;evOf(d).filter(e=>e.type!='travel'&&e.kind!='opt').forEach(e=>{n++;if(stOf(e,t)=='done')a++});S.tasks.filter(x=>x.due==t||x.doneOn==t).forEach(x=>{n++;if(x.done)a++});S.habits.forEach(h=>{n++;if(h.log[t])a++});return n?Math.round(a/n*100):0}
 const bar=p=>`<div class=pb><i style="width:${p}%"></i></div>`;
 function evRow(e,date,cf){const s=stOf(e,date);return `<div class="ev ${s}" style="--c:${COL[e.type]}"><span class=m>${t12(e.s)} – ${t12(e.e)}</span><span class=t>${evTitle(e)}</span>${e.prot?`<span class=tag>🔒 ${tr('prot')}</span>`:''}<span class=tag>${tr(e.kind)}</span>${cf&&cf.has(e.id)?'<span class=tag style="background:#fde68a">⚠</span>':''}<button class="b s g" onclick="setSt('${e.id}','${date}','done')">✓</button><button class="b s g" onclick="setSt('${e.id}','${date}','missed')">✗</button><button class="b s g" onclick="editEv('${e.id}')">✎</button></div>`}
 function setSt(id,date,v){const k=id+'|'+date;S.st[k]=S.st[k]==v?'':v;save();render()}
@@ -194,7 +194,7 @@ const L2=(a,e)=>S.lang=='ar'?a:e;S.exams=S.exams||[];
 const taskRow=x=>`<div style="margin-bottom:6px"><div class=row><input type=checkbox ${x.done?'checked':''} onchange="tk('${x.id}')"><span class=f style="${x.done?'text-decoration:line-through;opacity:.6':''}">${esc(x.t)} <span class=m>${x.tm?t12(x.tm):''} ${x.due||''} ${x.rec?'🔁':''} ${x.spent?'⏱'+Math.round(x.spent/60)+'m':''}</span></span>${x.done?'':`<button class="b s g" onclick="post('${x.id}')">${tr('postpone')}</button>`}<button class="b s g" onclick="subAdd('${x.id}')">＋</button><button class="b s g" onclick="delT('${x.id}')">✕</button></div>${(x.subs||[]).map((s,i)=>`<label style="margin:2px 18px;color:var(--tx)"><input type=checkbox ${s.done?'checked':''} onchange="subTog('${x.id}',${i})"> ${esc(s.t)}</label>`).join('')}</div>`;
 const subAdd=id=>form(L2('مهمة فرعية','Subtask'),[{k:'t',l:tr('Title')}],r=>{if(r.t.trim()){const x=S.tasks.find(y=>y.id==id);(x.subs=x.subs||[]).push({t:r.t.trim(),done:0})}});
 const subTog=(id,i)=>{S.tasks.find(y=>y.id==id).subs[i].done^=1;save();render()};
-V.dash=()=>{const t=today(),now=new Date(),d=now.getDay(),h=now.getHours(),cf=conflicts(d);
+V.dash=()=>{const t=today(),now=new Date(),d=cairoDay(),h=+new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',hourCycle:'h23'}).format(now),cf=conflicts(d);
 const g=L2(h<12?'صباح الخير':'مساء الخير',h<12?'Good morning':'Good evening'),timed=[],any=[];
 evOf(d).forEach(e=>timed.push([mm(e.s),evRow(e,t,cf)]));
 S.tasks.filter(x=>(x.due==t&&!x.done)||x.doneOn==t).forEach(x=>x.tm?timed.push([mm(x.tm),taskRow(x)]):any.push(taskRow(x)));
