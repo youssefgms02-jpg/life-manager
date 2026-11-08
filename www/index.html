@@ -150,7 +150,7 @@ return{lang:'ar',dark:null,v:'dash',cd:new Date().getDay(),events:ev,st:{},tasks
 proj:[{id:'p1',n:'Personal Study and Task Organizer',col:1,steps:['Create index.html with a title and an input box','Add a button that adds a task to a list','Style the page with CSS (blue/white)','Mark a task as done on click','Save tasks with localStorage','Add a daily planner section'].map(t=>({t,done:0})),note:''},
 {id:'p2',n:'Personal Expense Tracker',col:0,steps:[],note:''},{id:'p3',n:'Minecraft Server Tool (Java/Skript)',col:0,steps:[],note:''},{id:'p4',n:'Mini City-Building Game (JS)',col:0,steps:[],note:''}],pj:'p1',
 habits:['Sleep schedule','Study session','Project time','Shower & personal care','Walk / activity','Confidence exercise','Review the day kindly'].map(n=>({id:uid(),n,log:{}})),
-conf:{start:today(),lvl:'easy',done:{},notes:[]},logs:{},reviews:[]}}
+,logs:{},reviews:[]}}
 const FRESH=!localStorage.getItem('lm2');let S;try{S=JSON.parse(localStorage.getItem('lm2'))}catch(e){}if(!S||!S.events){let o;try{o=JSON.parse(localStorage.getItem('lm1'))}catch(e){}S=seed();if(o&&o.events){S.events=o.events;S.lang=o.lang||'ar';S.dark=o.dark}}
 const save=()=>{S.ts=Date.now();try{localStorage.setItem('lm2',JSON.stringify(S))}catch(e){}stamp();syncSoon()};
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
@@ -174,7 +174,7 @@ const g=S.lang=='ar'?(h<12?'صباح الخير':'مساء الخير'):(h<12?'G
 const ev=evOf(d),nxt=ev.find(e=>e.type=='lesson'&&mm(e.s)>nm);
 const p=S.proj.find(x=>x.id==S.pj),ns=p&&p.steps.find(s=>!s.done);
 const tk=S.tasks.filter(x=>x.due<=t&&!x.done||x.doneOn==t);
-const C=confToday();const lg=S.logs[t]||{};
+const lg=S.logs[t]||{};
 return `<h2>${g} 👋</h2><div class=m>${now.toLocaleDateString(S.lang=='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Africa/Cairo'})}</div>
 <div class=card><h3>${fmt(prog())}% ${tr('done')}</h3>${bar(prog())}<div class=m style="margin-top:6px">${S.lang=='ar'?'يوم فيه شوية مهام ناقصة مش معناه إنه يوم فاشل 🙂':'A few unfinished items do not make a failed day 🙂'}</div></div>
 <div class=row style="margin-bottom:12px"><button class=b onclick="qTask()">＋ ${tr('tasks')}</button><button class="b g" onclick="editEv()">＋ ${tr('cal')}</button></div>
@@ -182,7 +182,7 @@ return `<h2>${g} 👋</h2><div class=m>${now.toLocaleDateString(S.lang=='ar'?'ar
 <div class=card><h3>${tr('tasks')}</h3>${tk.map(taskRow).join('')||`<div class=empty>${S.lang=='ar'?'مفيش مهام. ضيف أول مهمة!':'No tasks yet. Add one!'}</div>`}</div>
 <div class=card><h3>${tr('growth')}</h3>${S.habits.map(h=>`<label style="color:var(--tx)"><input type=checkbox ${h.log[t]?'checked':''} onchange="hab('${h.id}','${t}')"> ${esc(h.n)}</label>`).join('')}</div>
 <div class=card><h3>${tr('proj')}</h3>${p?`<b>${esc(p.n)}</b>${bar(pp(p))}<div style="margin-top:8px">➡ ${S.lang=='ar'?'الخطوة الجاية':'Next step'}: ${ns?esc(ns.t):'🎉'}</div>`:''}</div>
-<div class=card><h3>🌱 ${S.lang=='ar'?'تحدي الثقة':'Confidence challenge'}</h3>${C}</div>
+
 <div class=card><h3>${tr('leisure')}</h3><div class=m>🎮 ${fmt(lg.game||0)} / 3h · 😴 ${fmt(lg.sleep||0)}h (8–10h)</div><button class="b g s" onclick="logForm()">${tr('add')}</button></div></div>`};
 const taskRow0=x=>`<div class=row style="margin-bottom:6px"><input type=checkbox ${x.done?'checked':''} onchange="tk('${x.id}')"><span class=f style="${x.done?'text-decoration:line-through;opacity:.6':''}">${esc(x.t)} <span class=m>${x.due||''} ${'!'.repeat(x.pri||0)}</span></span>${x.done?'':`<button class="b s g" onclick="post('${x.id}')">${tr('postpone')}</button>`}<button class="b s g" onclick="delT('${x.id}')">✕</button></div>`;
 const tk=id=>{const x=S.tasks.find(y=>y.id==id);x.done=!x.done;x.doneOn=x.done?today():null;if(x.done&&x.rec&&!x.nx){x.nx=1;S.tasks.push({...x,id:uid(),done:0,doneOn:null,nx:0,subs:(x.subs||[]).map(s=>({t:s.t,done:0})),due:addD(x.due||today(),x.rec=='daily'?1:7)})}save();render()};
@@ -206,18 +206,8 @@ V.proj=()=>{const p=S.proj.find(x=>x.id==S.pj);
 return `<h2>${tr('proj')}</h2><div class=kan>${COLN.map((c,i)=>`<div class=col><b class=m>${c[S.lang=='ar'?0:1]}</b>${S.proj.filter(x=>x.col==i).map(x=>`<div class=card style="padding:8px;margin:6px 0"><a style="cursor:pointer;font-weight:600;font-size:13px" onclick="S.pj='${x.id}';render()">${esc(x.n)}</a>${bar(pp(x))}<div class=row style="margin-top:4px"><button class="b s g" onclick="mv('${x.id}',-1)">◀</button><button class="b s g" onclick="mv('${x.id}',1)">▶</button></div></div>`).join('')}</div>`).join('')}</div>
 ${p?`<div class=card style="margin-top:12px"><h3>${esc(p.n)} — ${pp(p)}%</h3>${p.steps.map((s,i)=>`<div class=row style="margin-bottom:4px"><input type=checkbox ${s.done?'checked':''} onchange="S.proj.find(x=>x.id=='${p.id}').steps[${i}].done^=1;save();render()"><span class=f>${esc(s.t)}</span></div>`).join('')||'<div class=empty>—</div>'}<input placeholder="＋ step" onkeydown="if(event.key=='Enter'&&this.value.trim()){S.proj.find(x=>x.id=='${p.id}').steps.push({t:this.value.trim(),done:0});save();render()}"><textarea rows=2 style="margin-top:6px" onchange="S.proj.find(x=>x.id=='${p.id}').note=this.value;save()" placeholder="notes / links">${esc(p.note)}</textarea></div>`:''}`};
 const mv=(id,n)=>{const p=S.proj.find(x=>x.id==id);p.col=Math.max(0,Math.min(4,p.col+n));save();render()};
-const CP=[{th:['الوعي بالذات','Self-awareness'],ex:[['اكتب 3 حاجات كويس فيك','Write 3 things you like about yourself'],['اكتب موقف عدّى كويس النهاردة','Note one thing that went well today'],['قول لنفسك جملة لطيفة قدّام المراية','Say one kind sentence to yourself']],ch:[['سلّم على حد وابتسم','Greet someone with a smile'],['خد مجاملة وقول شكرًا','Accept a compliment with "thanks"']]},
-{th:['مهارات الحوار','Conversation'],ex:[['جهّز سؤال مفتوح لصاحبك','Prepare one open question'],['اسمع حد 2 دقيقة من غير ما تقاطع','Listen 2 min without interrupting'],['اتمرّن على كلام فيه تواصل بصري','Practice eye contact in the mirror']],ch:[['اسأل صاحبك عن يومه','Ask a friend about their day'],['ابدأ كلام قصير مع حد من العيلة','Start a short chat with a relative']]},
-{th:['الحزم والنقد','Assertiveness'],ex:[['اتمرّن تقول "لا" بهدوء','Practice a calm "no"'],['اكتب ردّ هادي على نقد قديم','Draft a calm reply to old criticism'],['خد 3 أنفاس قبل ما تردّ','Take 3 breaths before replying']],ch:[['قول رأيك في اختيار بسيط (أكل/لعبة)','State a preference on a small choice'],['اطلب حاجة صغيرة بأدب','Politely ask for a small thing']]},
-{th:['الانضباط','Discipline'],ex:[['ابدأ مهمة 5 دقايق بس','Start a task for just 5 min'],['اكتب مين رأيهم فعلًا يهمّك','List whose opinions truly matter'],['روتين عناية قصير قبل النوم','Short self-care routine']],ch:[['اعمل حاجة صغيرة مع إنك خايف من رأي الناس','Do a small thing despite fear of opinions'],['شارك فكرة في كلام جماعي','Share an idea in a group chat']]}];
-function confWeek(){const n=Math.floor((new Date(today())-new Date(S.conf.start))/864e5/7);return Math.max(0,Math.min(3,n))}
-function confToday(){const w=CP[confWeek()],L=S.lang=='ar'?0:1,d=new Date().getDay(),busy=evOf(d).filter(e=>e.type=='lesson').length>=2||d==4,t=today();
-return `<div class=m>${S.lang=='ar'?'الأسبوع':'Week'} ${confWeek()+1}: ${w.th[L]}</div><div style="margin:6px 0">${busy?(S.lang=='ar'?'يوم زحمة — خفيف: 5 دقايق كفاية. ':'Busy day — keep it light: 5 min is enough. '):''}${w.ex[d%3][L]}${S.conf.lvl=='easy'?'':' (+)'}</div><label style="color:var(--tx)"><input type=checkbox ${S.conf.done[t]?'checked':''} onchange="S.conf.done['${t}']=this.checked?1:0;save();render()"> ${tr('done')}</label>`}
-V.growth=()=>{const t=today(),L=S.lang=='ar'?0:1,w=CP[confWeek()],days=[...Array(7)].map((_,i)=>addD(t,i-6));
-return `<h2>${tr('growth')}</h2><div class=card><h3>Habits</h3>${S.habits.map(h=>`<div class=row style="margin-bottom:6px"><input type=checkbox ${h.log[t]?'checked':''} onchange="hab('${h.id}','${t}')"><span class=f>${esc(h.n)}</span><span>${days.map(d=>`<i class="dot ${h.log[d]?'on':''}"></i>`).join('')}</span></div>`).join('')}<input placeholder="＋ habit" onkeydown="if(event.key=='Enter'&&this.value.trim()){S.habits.push({id:uid(),n:this.value.trim(),log:{}});save();render()}"></div>
-<div class=card><h3>🌱 ${S.lang=='ar'?'برنامج الثقة (4 أسابيع)':'Confidence program (4 weeks)'}</h3>${confToday()}<h3 style="margin-top:12px">${S.lang=='ar'?'تحديات اجتماعية آمنة':'Safe social challenges'}</h3>${w.ch.map(c=>`<div>• ${c[L]}</div>`).join('')}
-<div class=row style="margin-top:10px"><select class=f onchange="S.conf.lvl=this.value;save();render()"><option value=easy ${S.conf.lvl=='easy'?'selected':''}>${S.lang=='ar'?'سهل':'Easy'}</option><option value=mid ${S.conf.lvl=='mid'?'selected':''}>${S.lang=='ar'?'متوسط':'Medium'}</option></select></div>
-<textarea rows=2 style="margin-top:8px" placeholder="${S.lang=='ar'?'ملاحظة تأمل':'Reflection note'}" onchange="S.conf.notes.push({d:today(),t:this.value});save();render()"></textarea>${S.conf.notes.slice(-3).map(n=>`<div class=m>${n.d}: ${esc(n.t)}</div>`).join('')}</div>`};
+V.growth=()=>{const t=today(),days=[...Array(7)].map((_,i)=>addD(t,i-6));
+return `<h2>${tr('growth')}</h2><div class=card><h3>${L2('العادات اليومية','Daily habits')}</h3>${S.habits.map(h=>`<div class=row style="margin-bottom:6px"><input type=checkbox ${h.log[t]?'checked':''} onchange="hab('${h.id}','${t}')"><span class=f>${esc(h.n)}</span><span>${days.map(d=>`<i class="dot ${h.log[d]?'on':''}"></i>`).join('')}</span></div>`).join('')||`<div class=empty>${L2('مفيش عادات لسه','No habits yet')}</div>`}<input placeholder="${L2('＋ أضف عادة','＋ Add a habit')}" onkeydown="if(event.key=='Enter'&&this.value.trim()){S.habits.push({id:uid(),n:this.value.trim(),log:{}});save();render()}"></div>`};
 function logForm(){const l=S.logs[today()]||{};form(tr('leisure'),[{k:'game',l:'🎮 h',t:'number',v:l.game||''},{k:'sleep',l:'😴 h',t:'number',v:l.sleep||''}],r=>{S.logs[today()]={game:+r.game||0,sleep:+r.sleep||0}})}
 V.leisure=()=>{const t=today(),days=[...Array(7)].map((_,i)=>addD(t,i-6)),rows=days.map(d=>[d,S.logs[d]]).filter(x=>x[1]),gm=rows.filter(r=>r[1].game>3&&r[1].sleep&&r[1].sleep<8).length;
 return `<h2>${tr('leisure')}</h2><div class=card><button class=b onclick="logForm()">＋ ${S.lang=='ar'?'سجّل النهاردة':'Log today'}</button>${gm>=3?`<div class=w style="margin-top:8px">${S.lang=='ar'?'لاحظت إن الألعاب بتتأخر بالنوم كام يوم ورا بعض — ممكن تقدّم وقت النوم شوية؟':'Gaming has been cutting into sleep a few days in a row — maybe nudge bedtime earlier?'}</div>`:''}<table style="width:100%;margin-top:10px;font-size:13px"><tr class=m><td></td><td>🎮 (3h)</td><td>😴 (8–10h)</td></tr>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1].game}</td><td>${r[1].sleep}</td></tr>`).join('')||`<tr><td colspan=3 class=empty>—</td></tr>`}</table></div>`};
@@ -243,7 +233,7 @@ S.habits.forEach(x=>any.push(`<label style="color:var(--tx)"><input type=checkbo
 S.study.filter(x=>x.due==t||(!x.due&&!x.done)).slice(0,5).forEach(x=>any.push(`<label style="display:flex;align-items:center;gap:8px;color:var(--tx);${x.done?'opacity:.65;text-decoration:line-through':''}"><input type=checkbox ${x.done?'checked':''} onchange="itDone('s','${x.id}')"> 📚 ${tr(x.s)}: ${esc(x.t)}</label>`));
 S.exams.filter(x=>{const n=(new Date(x.d)-new Date(t))/864e5;return n>=0&&n<=7}).forEach(x=>any.push(`<div>📝 ${tr(x.s)}: ${esc(x.t)} (${x.d})</div>`));
 const p=S.proj.find(x=>x.id==S.pj),ns=p&&p.steps.find(s=>!s.done);if(ns)any.push(`<div>💻 ${esc(p.n)}: ${esc(ns.t)}</div>`);
-any.push(`<div>🌱 ${confToday()}</div>`);const lg=S.logs[t]||{};any.push(`<div class=m>🎮 ${fmt(lg.game||0)}/3h · 😴 ${fmt(lg.sleep||0)}h</div>`);
+const lg=S.logs[t]||{};any.push(`<div class=m>🎮 ${fmt(lg.game||0)}/3h · 😴 ${fmt(lg.sleep||0)}h</div>`);
 const todayTasks=S.tasks.filter(x=>x.due==t&&!x.done&&!x.missed),overdueTasks=S.tasks.filter(x=>x.due<t&&!x.done&&!x.missed),examSoon=S.exams.filter(x=>{const n=(new Date(x.d)-new Date(t))/864e5;return n>=0&&n<=7}).length;
 return `<h2>${g} 👋</h2><div class=m>${now.toLocaleDateString(S.lang=='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Africa/Cairo'})}</div><div class=card style="margin-top:10px"><div class=row style="justify-content:space-between;margin-bottom:7px"><b>${L2('إنجاز اليوم','Today’s progress')}</b><strong>${fmt(prog())}%</strong></div>${bar(prog())}<div class="dash-metrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:10px"><div class=metric><strong>📌 ${fmt(todayTasks.length)}</strong><span>${L2('متبقي اليوم','Due today')}</span></div><div class=metric><strong>↩ ${fmt(overdueTasks.length)}</strong><span>${L2('مهام متأخرة','Overdue tasks')}</span></div><div class=metric><strong>📝 ${fmt(examSoon)}</strong><span>${L2('امتحانات قريبة','Exams soon')}</span></div></div></div><div class=row style="margin-bottom:12px"><button class=b onclick="qTask()">＋ ${tr('tasks')}</button><button class="b g" onclick="editEv()">＋ ${tr('cal')}</button><button class="b g" onclick="logForm()">😴🎮</button></div>${cf.size?`<div class=w>${tr('conflict')}</div>`:''}<div class=card><h3>${L2('يومي كله','My whole day')} — ${dn(d)}</h3>${timed.map(r=>r[1]).join('')}<h3 style="margin-top:14px">${tr('all2')}</h3>${any.join('')}</div>`};
 V.week=()=>`<h2>${tr('week')}</h2><div class=m>${L2('اسحب أي حدث لليوم التاني (كمبيوتر). على الموبايل استخدم التعديل.','Drag an event to another day (desktop). On phone, tap an event to edit.')}</div><div style="display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:6px;overflow-x:auto;margin:10px 0">${ORD.map(d=>`<div class=col ondragover="event.preventDefault()" ondrop="dp(event,${d})"><b>${dn(d)}${conflicts(d).size?' ⚠':''}</b>${evOf(d).map(e=>`<div class=ev draggable=true ondragstart="event.dataTransfer.setData('text','${e.id}')" style="--c:${COL[e.type]};display:block;font-size:12px;cursor:grab" onclick="editEv('${e.id}')"><div class=m>${t12(e.s)} – ${t12(e.e)}</div>${evTitle(e)}${e.prot?' 🔒':''}</div>`).join('')}</div>`).join('')}</div><div class=card><h3>${L2('انسخ يوم ليوم تاني','Copy a day to another day')}</h3><div class=row><select id=cp1 class=f>${ORD.map(d=>`<option value=${d}>${dn(d)}</option>`).join('')}</select><span>→</span><select id=cp2 class=f>${ORD.map(d=>`<option value=${d}>${dn(d)}</option>`).join('')}</select><button class=b onclick="cpDay(+cp1.value,+cp2.value)">${tr('add')}</button></div></div>`;
@@ -340,11 +330,11 @@ const put=(n,du,prefs,l,cat)=>{for(const p of [].concat(prefs)){let c=Math.max(p
 if(sel!=t||wake>=nowR)put(L2('☀ صحيان وفطار','☀ Wake up & breakfast'),45,wake,end,'wake');
 put(L2('🌙 جهّز للنوم — النوم ','🌙 Wind down — bed at ')+t12(hm(bed%1440)),25,end,end+25,'sleep');
 if(!S.events.some(e=>e.day==d&&e.title=='shower'))put(L2('🚿 دش','🚿 Shower'),20,wake+45,lim,'care');
-if(thu){put(L2('🍽 غدا','🍽 Lunch'),45,825,900,'meal');put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');put(L2('👨‍👩‍👧 وقت مع العيلة','👨‍👩‍👧 Family time'),60,1110,end,'fam')}
+if(thu){put(L2('🍽 غدا','🍽 Lunch'),45,825,900,'meal');put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');}
 const les=[...new Set(evOf(d).filter(e=>e.type=='lesson').map(e=>e.title))],rot=SUBJ.filter(s=>!les.includes(s)),k=Math.floor(new Date(sel+'T12:00:00')/864e5)%rot.length,order=[...les,...rot.slice(k),...rot.slice(0,k)],ns=L==0?2:1;
 for(let i=0;i<ns;i++){const s=order[i],le=evOf(d).find(e=>e.title==s&&e.type=='lesson');put('📚 '+(L>=2?L2('مراجعة خفيفة: ','Light review: '):L2('مذاكرة: ','Study: '))+tr(s),L>=2?30:50,[le?mm(le.e)+45:0,840,1200].filter(Boolean),lim,'study')}
 const p=S.proj.find(x=>x.id==S.pj),st=p&&p.steps.find(s=>!s.done);if(st&&L<=1&&!thu)put('💻 '+L2('مشروع: ','Project: ')+st.t,L==0?120:90,[900,780,1200],end,'proj');
-put(L2('🌱 تمرين الثقة','🌱 Confidence exercise'),L>=2?5:15,[900,780],lim,'conf');
+
 if(!thu&&!fri)put(L2('🚶 مشي / حركة','🚶 Walk'),30,1200,end,'walk');
 put(L2('☕ راحة','☕ Rest'),30,[960,840],lim,'rest');
 let g=thu?60:L>=2?120:180;while(g>=30){const du=Math.min(90,g);if(put(L2('🎮 ألعاب','🎮 Gaming'),du,[1110,900,780],lim,'game')===null)break;g-=du}
@@ -364,7 +354,7 @@ const put=(n,du,prefs,l,cat,ex)=>{if([...S.tasks,...S.study].some(x=>x.auto&&x.d
 if(sel!=t||wake>=nowR)put(L2('☀ صحيان وفطار','☀ Wake up & breakfast'),45,wake,end,'wake');
 put(L2('🌙 جهّز للنوم — النوم ','🌙 Wind down — bed at ')+t12(hm(bed%1440)),25,end,end+25,'sleep');
 if(!S.events.some(e=>e.day==d&&e.title=='shower'))put(L2('🚿 دش','🚿 Shower'),20,wake+45,lim,'care');
-if(thu){put(L2('🍽 غدا','🍽 Lunch'),45,825,900,'meal');put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');put(L2('👨‍👩‍👧 وقت مع العيلة','👨‍👩‍👧 Family time'),60,1110,end,'fam')}
+if(thu){put(L2('🍽 غدا','🍽 Lunch'),45,825,900,'meal');put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');}
 /* study: user revision list split across the day */
 const pool=REV().filter(r=>!r.done&&!S.study.some(y=>y.revId==r.id&&!y.done&&!y.missed));
 if(pool.length){let bud=c.study*60,i=0;for(const r of pool){if(bud<20)break;const du=Math.min(r.du,bud,120);if(put(r.t,du,i%2?[1200,1260,900]:[840,780,900],lim,'rev',{s:r.s,revId:r.id})!==null){bud-=du;sm.study+=du;i++}}}
@@ -372,7 +362,7 @@ else if(c.study>0){const les=[...new Set(evOf(d).filter(e=>e.type=='lesson').map
 /* projects: split across the user's projects */
 const act=S.proj.filter(p=>p.col!=4).sort((a,b)=>(b.id==S.pj)-(a.id==S.pj));
 if(act.length&&c.proj>0){const bud=c.proj*60,n=Math.max(1,Math.min(act.length,Math.floor(bud/30))),off=act.length>n?Math.floor(new Date(sel+'T12:00:00')/864e5)%act.length:0,per=Math.min(120,Math.floor(bud/n/15)*15);if(per>=15)for(let i=0;i<n;i++){const p=act[(off+i)%act.length],st=p.steps.find(s=>!s.done);if(put('💻 '+p.n+(st?': '+st.t:''),per,[900,780,1200],lim,'proj')!==null)sm.proj+=per}}
-put(L2('🌱 تمرين الثقة','🌱 Confidence exercise'),L>=2?5:15,[900,780],lim,'conf');
+
 if(!thu&&!fri)put(L2('🚶 مشي / حركة','🚶 Walk'),30,1200,end,'walk');
 put(L2('☕ راحة','☕ Rest'),30,[960,840],lim,'rest');
 let g=c.game*60;while(g>=30){const du=Math.min(90,g);if(put(L2('🎮 ألعاب','🎮 Gaming'),du,[1110,900,780],lim,'game')===null)break;g-=du;sm.game+=du}
@@ -392,7 +382,7 @@ const putS=(n,du,prefs,l,cat,ex)=>{for(const x of [du,60,45,30,20].filter((v,i,a
 if(sel!=t||wake>=nowR)put(L2('☀ صحيان وفطار','☀ Wake up & breakfast'),45,wake,end,'wake');
 put(L2('🌙 جهّز للنوم — النوم ','🌙 Wind down — bed at ')+t12(hm(bed%1440)),25,end,end+25,'sleep');
 if(!S.events.some(e=>e.day==d&&e.title=='shower'))put(L2('🚿 دش','🚿 Shower'),20,wake+45,lim,'care');
-if(thu){put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');put(L2('👨‍👩‍👧 وقت مع العيلة','👨‍👩‍👧 Family time'),60,1110,end,'fam')}
+if(thu){put(L2('🎒 جهّز للزيارة (لبس ومشوار)','🎒 Get ready for the visit'),25,870,900,'prep')}else{put(L2('🍽 غدا مع العيلة','🍽 Family lunch'),60,1050,end,'meal');put(L2('🍽 عشا','🍽 Dinner'),30,1320,end,'meal');}
 const nd=(d+1)%7;[...new Set(S.events.filter(e=>e.day==nd&&e.type=='lesson').map(e=>e.title))].forEach(s=>{putS(L2('📝 حل واجب (درس بكرة)','📝 Homework (lesson tomorrow)'),40,[1200,1260,900,780,0],thu?lim:end,'hw',{s})});
 const gmN=()=>{let g=c.game*60;while(g>=20){const p=putS(L2('🎮 ألعاب','🎮 Gaming'),Math.min(90,g),[1110,900,780,0],lim,'game');if(!p)break;g-=p;sm.game+=p}};
 if(thu)gmN();
@@ -401,7 +391,7 @@ if(pool.length){let bud=c.study*60,i=0;for(const r of pool){if(bud<20)break;cons
 else if(c.study>0){const les=[...new Set(evOf(d).filter(e=>e.type=='lesson').map(e=>e.title))],rot=SUBJ.filter(s=>!les.includes(s)),k=Math.floor(new Date(sel+'T12:00:00')/864e5)%rot.length,order=[...les,...rot.slice(k),...rot.slice(0,k)],ns=L==0?2:1;for(let i=0;i<ns;i++){const s=order[i],le=evOf(d).find(e=>e.title==s&&e.type=='lesson'),p=putS('📚 '+(L>=2?L2('مراجعة خفيفة: ','Light review: '):L2('مذاكرة: ','Study: '))+tr(s),L>=2?30:50,[le?mm(le.e)+45:0,840,1200,0].filter(x=>x||x===0),lim,'study');sm.study+=p}}
 const act=S.proj.filter(p=>p.col!=4).sort((a,b)=>(b.id==S.pj)-(a.id==S.pj));
 if(act.length&&c.proj>0){const bud=c.proj*60,n=Math.max(1,Math.min(act.length,Math.floor(bud/30))),off=act.length>n?Math.floor(new Date(sel+'T12:00:00')/864e5)%act.length:0,per=Math.floor(bud/n/15)*15;if(per>=15)for(let i=0;i<n;i++){const p=act[(off+i)%act.length],st=p.steps.find(s=>!s.done);let rem=per;while(rem>=15){const x=putS('💻 '+p.n+(st?': '+st.t:''),Math.min(90,rem),[900,780,1200,0],lim,'proj');if(!x)break;rem-=x;sm.proj+=x}}}
-put(L2('🌱 تمرين الثقة','🌱 Confidence exercise'),L>=2?5:15,[900,780,0],lim,'conf');
+
 if(!thu&&!fri)put(L2('🚶 مشي / حركة','🚶 Walk'),30,1200,end,'walk');
 put(L2('☕ راحة','☕ Rest'),30,[960,840,0],lim,'rest');
 if(!thu)gmN();
@@ -473,13 +463,13 @@ var SM;try{SM=JSON.parse(localStorage.getItem('lmmeta'))}catch(e){}if(!SM||!SM.u
 var saveM=()=>{try{localStorage.setItem('lmmeta',JSON.stringify(SM))}catch(e){}};
 function recs(){const r={};SARR.forEach(k=>{(S[k]=S[k]||[]).forEach(x=>{if(!x.id)x.id=uid();r[k+'|'+x.id]=x})});
 for(const k in S.st||{})r['st|'+k]={v:S.st[k]};for(const k in S.logs||{})r['logs|'+k]=S.logs[k];for(const k in S.notes||{})r['notes|'+k]={v:S.notes[k]};for(const k in S.gen||{})r['gen|'+k]={v:S.gen[k]};
-r['set|main']={cfg:S.cfg,lang:S.lang,dark:S.dark,pj:S.pj,conf:S.conf,tip:S.tip,prayerDone:S.prayerDone,water:S.water,mood:S.mood,journal:S.journal,goals:S.goals};return r}
+r['set|main']={cfg:S.cfg,lang:S.lang,dark:S.dark,pj:S.pj,tip:S.tip,prayerDone:S.prayerDone,water:S.water,mood:S.mood,journal:S.journal,goals:S.goals};return r}
 function stamp(){if(!SARR||!SM||!SM.u)return;const r=recs(),now=Date.now(),base=SM.init?now:(FRESH?0:(S.ts||now));for(const k in r){const h=JSON.stringify(r[k]);if(SM.h[k]!==h){SM.h[k]=h;SM.u[k]=base;delete SM.d[k]}}for(const k in SM.h)if(!(k in r)){delete SM.h[k];delete SM.u[k];SM.d[k]=now}SM.init=1;saveM()}
 function applyRec(k,w){const i0=k.indexOf('|'),kind=k.slice(0,i0),id=k.slice(i0+1),del=w.deleted,d=w.data;
 if(SARR.includes(kind)){const a=S[kind]=S[kind]||[],i=a.findIndex(x=>x.id==id);if(del){if(i>=0)a.splice(i,1)}else if(i>=0)a[i]=d;else a.push(d)}
 else if(kind=='st'||kind=='notes'||kind=='gen'){const o=S[kind]=S[kind]||{};if(del)delete o[id];else o[id]=d.v}
 else if(kind=='logs'){S.logs=S.logs||{};if(del)delete S.logs[id];else S.logs[id]=d}
-else if(kind=='set'&&!del){['cfg','lang','dark','pj','conf','tip','prayerDone','water','mood','journal','goals'].forEach(f=>{if(d[f]!==undefined)S[f]=d[f]})}}
+else if(kind=='set'&&!del){['cfg','lang','dark','pj','prayerDone','water','mood','journal','goals'].forEach(f=>{if(d[f]!==undefined)S[f]=d[f]})}}
 var SB=()=>{try{return JSON.parse(localStorage.getItem('lmsb'))}catch(e){return null}};
 async function sbAuth(url,key,email,pw,signup){const r=await fetch(url+'/auth/v1/'+(signup?'signup':'token?grant_type=password'),{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})}),j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'auth failed');if(!j.access_token)throw new Error('Confirm your email first (or turn off "Confirm email" in Supabase)');localStorage.setItem('lmsb',JSON.stringify({url,key,at:j.access_token,rt:j.refresh_token,uid:j.user.id,exp:Date.now()+j.expires_in*1000-60000}))}
 async function sbTok(){let c=SB();if(!c)return null;if(Date.now()>c.exp){const r=await fetch(c.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:c.rt})}),j=await r.json();if(!r.ok)throw new Error('session expired');c={...c,at:j.access_token,rt:j.refresh_token,exp:Date.now()+j.expires_in*1000-60000};localStorage.setItem('lmsb',JSON.stringify(c))}return c}
@@ -560,6 +550,25 @@ function lmGoalAdd(){const e=$('#lmGoal');if(e&&e.value.trim()){S.goals.push({id
 function lmGoalToggle(i,v){S.goals[i].done=v?1:0;save();render()}
 function lmGoalDel(i){S.goals.splice(i,1);save();render()}
 const lmDashBase=V.dash;V.dash=()=>lmDashBase()+lmPrayerTools()+lmDailyTools();
+
+function removeUnwantedAutoItems(){
+ if(S.lmNoFamilyConfidenceTasks)return;
+ const removedDays=new Set();
+ const unwanted=x=>x&&x.auto&&(
+  x.cat==='fam'||x.cat==='conf'||
+  /وقت مع العيلة|Family time|تمرين الثقة|Confidence exercise/i.test(String(x.t||''))
+ );
+ for(const key of ['tasks','study']){
+  const arr=S[key]||[];
+  S[key]=arr.filter(x=>{if(!unwanted(x))return true;if(x.due)removedDays.add(x.due);return false});
+ }
+ S.habits=(S.habits||[]).filter(h=>!/^confidence exercise$/i.test(String(h.n||''))&&String(h.n||'')!=='تمرين الثقة');
+ S.gen=S.gen||{};
+ removedDays.forEach(day=>{S.gen[day]=0});
+ S.lmNoFamilyConfidenceTasks=1;
+ save();
+}
+removeUnwantedAutoItems();
 
 function render(){const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('type')==='recovery'||hp.get('access_token')||hp.get('error_description')){renderRecovery();return}ensurePlanWindow();$('#nav').style.display='';document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=='ar'?'rtl':'ltr';document.documentElement.dataset.theme=(S.dark==='dark'||S.dark==='light')?S.dark:'';if(!V[S.v])S.v='dash';
 $('#nav').innerHTML=`<b><svg width=28 height=28 viewBox="0 0 256 256" style="vertical-align:middle;margin-inline-end:6px"><rect width=256 height=256 rx=56 fill="#2563eb"/><rect x=56 y=72 width=144 height=128 rx=22 fill="#fff"/><path d="M56 94a22 22 0 0 1 22-22h100a22 22 0 0 1 22 22v18H56z" fill="#bfdbfe"/><rect x=88 y=50 width=14 height=38 rx=7 fill="#fff"/><rect x=154 y=50 width=14 height=38 rx=7 fill="#fff"/><path d="M92 156l26 26 48-52" fill=none stroke="#2563eb" stroke-width=16 stroke-linecap=round stroke-linejoin=round /></svg>${S.lang=='ar'?'مدير حياتي':'Life Manager'}</b><span class=m id=sy>${SY}</span>`+NAV.map(k=>`<a class="${S.v==k?'on':''}" onclick="S.v='${k}';render();scrollTo(0,0)">${tr(k)}</a>`).join('');$('#main').innerHTML=V[S.v]()}
